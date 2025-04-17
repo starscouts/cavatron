@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cavatron</title>
+    <style>
+        main {
+            position: fixed;
+            inset: 0;
+            background-color: black;
+            display: grid;
+            grid-template-columns: repeat(64, 1fr);
+            grid-gap: .5%;
+        }
+    </style>
+</head>
+<body>
+    <main id="app"></main>
+
+    <script>
+        document.getElementById("app").innerHTML = Array(64).fill(null).map((i, j) => j).map(i => `
+        <div class="bar" id="bar-${i}" style="transition: height 500ms; height: 0; width: 100%; background: white; margin-top: auto;"></div>
+        `).join("");
+
+        let lastData = new Date().getTime();
+
+        setInterval(() => {
+            if (new Date().getTime() - lastData > 1500) {
+                cp.kill();
+                run();
+            }
+        }, 1000);
+
+        setInterval(() => {
+            for (let index = 0; index < 64; index++) {
+                document.getElementById("bar-" + index).style.height = (((data[index] ?? 0) / 1000) * 100) + "%";
+            }
+        }, 50);
+
+        function run() {
+            window.cp = require('child_process').exec("cava");
+
+            cp.stdout.on('data', (recData) => {
+                lastData = new Date().getTime();
+                window.data = recData.toString().split(";").filter(i => i.trim() !== "").map(i => parseInt(i));
+            });
+        }
+
+        run();
+    </script>
+</body>
+</html>
